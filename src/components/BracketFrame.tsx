@@ -6,6 +6,7 @@ import {
   type SlotDef,
   type Stage,
 } from "@/lib/bracket";
+import { MobileBracket } from "./MobileBracket";
 
 // ROW_HEIGHT must comfortably exceed a card's natural height (~88px), otherwise
 // the cards overflow their slice and stop lining up with the SVG connectors.
@@ -163,23 +164,29 @@ export function BracketFrame({ resolved, renderMatch }: BracketFrameProps) {
   };
 
   return (
-    <div className="bracket-scroll w-full overflow-x-auto pb-4">
-      <div
-        className="mx-auto flex min-w-max items-stretch"
-        style={{ height: BRACKET_HEIGHT }}
-      >
-        {/* Left half: outer edge → center */}
-        {renderHalf("left")}
+    <>
+      {/* Mobile: stage switcher + single column (the poster layout won't fit). */}
+      <MobileBracket resolved={resolved} renderMatch={renderMatch} />
 
-        {/* Center: straight feed → final + 3rd place */}
-        <StraightConnector />
-        <CenterColumn resolved={resolved} renderMatch={renderMatch} />
-        <StraightConnector />
+      {/* Desktop: full two-sided converging poster. */}
+      <div className="bracket-scroll hidden w-full overflow-x-auto pb-4 md:block">
+        <div
+          className="mx-auto flex min-w-max items-stretch"
+          style={{ height: BRACKET_HEIGHT }}
+        >
+          {/* Left half: outer edge → center */}
+          {renderHalf("left")}
 
-        {/* Right half: center → outer edge */}
-        {renderHalf("right")}
+          {/* Center: straight feed → final + 3rd place */}
+          <StraightConnector />
+          <CenterColumn resolved={resolved} renderMatch={renderMatch} />
+          <StraightConnector />
+
+          {/* Right half: center → outer edge */}
+          {renderHalf("right")}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 

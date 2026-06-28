@@ -62,28 +62,28 @@ export function Nav() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/70 bg-background/80 backdrop-blur-md">
-      <nav className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
-        <Link href="/" className="flex items-center gap-2">
+      <nav className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-3 py-3 sm:gap-4 sm:px-4">
+        <Link href="/" className="flex shrink-0 items-center gap-2">
           <span className="grid h-8 w-8 place-items-center rounded-lg bg-accent/15 text-lg">
             🏆
           </span>
-          <span className="hidden text-sm font-bold tracking-tight sm:block">
+          <span className="hidden text-sm font-bold tracking-tight lg:block">
             WC&nbsp;2026 <span className="text-accent">Predictions</span>
           </span>
         </Link>
 
-        <ul className="flex items-center gap-1">
+        <ul className="no-scrollbar flex min-w-0 flex-1 items-center gap-1 overflow-x-auto">
           {NAV_LINKS.map((link) => {
             const active =
               link.href === "/"
                 ? pathname === "/"
                 : pathname.startsWith(link.href);
             return (
-              <li key={link.href}>
+              <li key={link.href} className="shrink-0">
                 <Link
                   href={link.href}
                   aria-current={active ? "page" : undefined}
-                  className={`rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors sm:px-3 ${
+                  className={`block whitespace-nowrap rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors sm:px-3 ${
                     active
                       ? "bg-surface text-foreground"
                       : "text-muted hover:text-foreground"
@@ -96,7 +96,7 @@ export function Nav() {
           })}
         </ul>
 
-        <div className="flex min-w-[120px] items-center justify-end gap-2">
+        <div className="flex shrink-0 items-center justify-end gap-2">
           {!ready ? null : user ? (
             <>
               <Link
@@ -108,7 +108,7 @@ export function Nav() {
                   nick={profile?.nick ?? "Gracz"}
                   size={30}
                 />
-                <span className="hidden max-w-[120px] truncate text-sm text-foreground/90 sm:block">
+                <span className="hidden max-w-30 truncate text-sm text-foreground/90 sm:block">
                   {profile?.nick ?? user.email}
                 </span>
               </Link>

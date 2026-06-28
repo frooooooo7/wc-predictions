@@ -53,6 +53,15 @@ body {
   border-radius: 9999px;
 }
 
+/* Scrollable but visually clean (used for the nav links on mobile) */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 @keyframes live-pulse {
   0%,
   100% {
