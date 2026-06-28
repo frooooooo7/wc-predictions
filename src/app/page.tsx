@@ -35,7 +35,7 @@ export default async function HomePage() {
             </span>
           )}
           {!fromSeed && (
-            <SyncTimer intervalSeconds={120} canManualSync={isAdmin} />
+            <SyncTimer intervalSeconds={60} canManualSync={isAdmin} />
           )}
           <Link
             href="/predict"

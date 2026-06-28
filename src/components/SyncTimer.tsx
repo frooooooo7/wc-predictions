@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 interface SyncTimerProps {
-  /** Refresh interval in seconds (matches the Vercel cron schedule). */
+  /** How often the page re-reads data from the database (seconds). */
   intervalSeconds?: number;
   /** Only admins may trigger a real API sync and see the manual button. */
   canManualSync?: boolean;
@@ -75,7 +75,7 @@ export function SyncTimer({
         <span className="font-medium text-accent">Synchronizacja…</span>
       ) : (
         <span>
-          Dane odświeżają się co {intervalLabel} · za{" "}
+          Widok odświeża się co {intervalLabel} · za{" "}
           <span className="font-semibold tabular-nums text-foreground">
             {formatClock(remaining)}
           </span>
