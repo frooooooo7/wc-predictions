@@ -81,7 +81,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           {isRegister && (
             <div className="space-y-1.5">
               <label htmlFor="nick" className="text-xs font-medium text-muted">
-                Nick (widoczny w rankingu)
+                Nick
               </label>
               <input
                 id="nick"
