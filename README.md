@@ -67,20 +67,6 @@ Darmowy token: [football-data.org/client/register](https://www.football-data.org
 - Ręcznie (admin): przycisk ↻ przy liczniku auto-synchronizacji.
 - Automatycznie: cron ([`vercel.json`](./vercel.json)) co 2 minuty odpytuje `/api/sync`.
 
-## Deploy na Vercel
-
-1. Wypchnij repo na GitHub i zaimportuj projekt w Vercel.
-2. W **Project → Settings → Environment Variables** dodaj wszystkie zmienne z `.env.example`. **`CRON_SECRET` jest wymagane**, inaczej cron dostanie `401` i dane się nie zsynchronizują. Ustaw też `ADMIN_EMAILS` na swój e-mail.
-3. Zastosuj schemat bazy: `npm run db:setup` (lokalnie, z `DATABASE_URL`) albo wklej [`supabase/schema.sql`](./supabase/schema.sql) do SQL Editora w Supabase.
-4. Deploy. Cron z `vercel.json` ruszy automatycznie.
-
-## Bezpieczeństwo
-
-- Klucz `SUPABASE_SERVICE_ROLE_KEY` używany jest wyłącznie po stronie serwera (`src/lib/supabase/admin.ts`, `/api/sync`) i nigdy nie jest importowany do kodu klienta.
-- Dostęp do danych chroni **RLS** w Supabase: każdy modyfikuje tylko własny profil/typy, pliki avatara trzymane są w folderze `user-id/` (polityki storage), a typy meczów dnia można zapisać tylko przed kickoffem.
-- Po zatwierdzeniu drabinki blokada (`predictions_locked`) jest **egzekwowana po stronie bazy** (RLS + trigger jednokierunkowy) — gracz nie odblokuje typów przez API. Reset (np. na nowy sezon) wykonasz jako admin/`service_role`.
-- Sekrety trzymane są w `.env*` (ignorowane przez git); commitowany jest tylko `.env.example`.
-
 ## Punktacja
 
 **1 punkt za każdy trafiony typ** — czyli za poprawnie wytypowanego zwycięzcę zakończonego meczu na danej pozycji w drabince. Ranking sortowany malejąco po punktach.
