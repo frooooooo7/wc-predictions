@@ -1,65 +1,65 @@
-import Image from "next/image";
+import Link from "next/link";
+import { getBracketData } from "@/lib/data";
+import { createClient } from "@/lib/supabase/server";
+import { isAdminUser } from "@/lib/admin";
+import { LiveBracket } from "@/components/LiveBracket";
+import { SyncTimer } from "@/components/SyncTimer";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  const supabase = await createClient();
+  const [{ matches, teamMap, fromSeed }, { data: auth }] = await Promise.all([
+    getBracketData(),
+    supabase.auth.getUser(),
+  ]);
+  const isAdmin = isAdminUser(auth.user);
+  const liveCount = matches.filter((m) => m.status === "LIVE").length;
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="space-y-5">
+      <header className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+            Faza pucharowa na żywo
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="mt-1 text-sm text-muted">
+            Drabinka Mistrzostw Świata 2026 — od 1/16 finału do finału.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        <div className="flex flex-wrap items-center gap-3">
+          {liveCount > 0 && (
+            <span className="inline-flex items-center gap-2 rounded-full border border-live/40 bg-live/10 px-3 py-1.5 text-sm font-semibold text-live">
+              <span className="h-2 w-2 rounded-full bg-live animate-live-pulse" />
+              {liveCount} {liveCount === 1 ? "mecz" : "mecze"} live
+            </span>
+          )}
+          {!fromSeed && (
+            <SyncTimer intervalSeconds={120} canManualSync={isAdmin} />
+          )}
+          <Link
+            href="/predict"
+            className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-background transition-colors hover:bg-accent-strong"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            Wytypuj swoją drabinkę
+          </Link>
         </div>
-      </main>
+      </header>
+
+      {fromSeed && (
+        <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-sm text-amber-200/90">
+          Tryb demo — wyświetlam przykładową drabinkę. Skonfiguruj bazę Supabase
+          i token API, aby zobaczyć prawdziwe wyniki na żywo.
+        </div>
+      )}
+
+      <section className="rounded-2xl border border-border/60 bg-surface/30 p-3 sm:p-4">
+        <LiveBracket
+          initialMatches={matches}
+          teamMap={teamMap}
+          realtime={!fromSeed}
+        />
+      </section>
     </div>
   );
 }

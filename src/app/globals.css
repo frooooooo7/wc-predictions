@@ -1,26 +1,69 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #070a12;
+  --surface: #0f1623;
+  --surface-2: #161f30;
+  --border: #243047;
+  --foreground: #e7ecf5;
+  --muted: #8b97ad;
+  --accent: #34d399;
+  --accent-strong: #10b981;
+  --live: #f43f5e;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-live: var(--live);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(52, 211, 153, 0.08), transparent 60%),
+    radial-gradient(1000px 500px at 0% 0%, rgba(56, 110, 255, 0.07), transparent 55%),
+    var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* Thin, themed scrollbars for the horizontally scrolling bracket */
+.bracket-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.bracket-scroll::-webkit-scrollbar {
+  height: 10px;
+  width: 10px;
+}
+.bracket-scroll::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 9999px;
+}
+
+@keyframes live-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.82);
+  }
+}
+.animate-live-pulse {
+  animation: live-pulse 1.2s ease-in-out infinite;
 }
