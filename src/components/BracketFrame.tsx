@@ -34,7 +34,7 @@ function Connector({ count, side }: { count: number; side: Side }) {
       : "M100 25 H45 V75 H100 M45 50 H0";
 
   return (
-    <div className="hidden w-7 shrink-0 flex-col md:flex" aria-hidden="true">
+    <div className="flex w-7 shrink-0 flex-col" aria-hidden="true">
       {/* Spacer matching the column header so elbows align with the cards. */}
       <div className="h-8 shrink-0" />
       {Array.from({ length: count }).map((_, i) => (
@@ -60,7 +60,7 @@ function Connector({ count, side }: { count: number; side: Side }) {
 
 function StraightConnector() {
   return (
-    <div className="hidden w-6 shrink-0 flex-col md:flex" aria-hidden="true">
+    <div className="flex w-6 shrink-0 flex-col" aria-hidden="true">
       <div className="h-8 shrink-0" />
       <div className="flex-1">
         <svg
@@ -113,9 +113,20 @@ function Column({ stage, slots, resolved, renderMatch }: ColumnProps) {
 interface BracketFrameProps {
   resolved: Record<string, ResolvedMatch>;
   renderMatch: (match: ResolvedMatch) => ReactNode;
+  /**
+   * Phone layout. "stack" shows a stage switcher (interactive live/predict views,
+   * which are client components). "scroll" keeps the full poster and lets the user
+   * pan left/right — used by read-only views that may render on the server, so we
+   * must not hand `renderMatch` to the client MobileBracket.
+   */
+  mobileLayout?: "stack" | "scroll";
 }
 
-export function BracketFrame({ resolved, renderMatch }: BracketFrameProps) {
+export function BracketFrame({
+  resolved,
+  renderMatch,
+  mobileLayout = "stack",
+}: BracketFrameProps) {
   const halves: Record<Stage, Record<Side, SlotDef[]>> = {
     R32: splitSlots("R32"),
     R16: splitSlots("R16"),
@@ -166,10 +177,17 @@ export function BracketFrame({ resolved, renderMatch }: BracketFrameProps) {
   return (
     <>
       {/* Mobile: stage switcher + single column (the poster layout won't fit). */}
-      <MobileBracket resolved={resolved} renderMatch={renderMatch} />
+      {mobileLayout === "stack" && (
+        <MobileBracket resolved={resolved} renderMatch={renderMatch} />
+      )}
 
-      {/* Desktop: full two-sided converging poster. */}
-      <div className="bracket-scroll hidden w-full overflow-x-auto pb-4 md:block">
+      {/* Two-sided converging poster — always on desktop, and on mobile too when
+          mobileLayout is "scroll" (read-only views pan it horizontally). */}
+      <div
+        className={`bracket-scroll w-full overflow-x-auto pb-4 ${
+          mobileLayout === "stack" ? "hidden md:block" : "block"
+        }`}
+      >
         <div
           className="mx-auto flex min-w-max items-stretch"
           style={{ height: BRACKET_HEIGHT }}

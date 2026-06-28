@@ -45,6 +45,7 @@ export function PredictionView({ matches, picks, teamMap }: PredictionViewProps)
       <Legend />
       <BracketFrame
         resolved={resolved}
+        mobileLayout="scroll"
         renderMatch={(match) => (
           <ReadonlyMatch
             match={match}
