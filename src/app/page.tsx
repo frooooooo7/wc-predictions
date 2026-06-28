@@ -34,9 +34,7 @@ export default async function HomePage() {
               {liveCount} {liveCount === 1 ? "mecz" : "mecze"} live
             </span>
           )}
-          {!fromSeed && (
-            <SyncTimer intervalSeconds={60} canManualSync={isAdmin} />
-          )}
+          {!fromSeed && <SyncTimer canManualSync={isAdmin} />}
           <Link
             href="/predict"
             className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-background transition-colors hover:bg-accent-strong"

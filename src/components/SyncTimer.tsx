@@ -1,100 +1,66 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
+import { dailySyncDescription } from "@/lib/sync-schedule";
 
 interface SyncTimerProps {
-  /** How often the page re-reads data from the database (seconds). */
-  intervalSeconds?: number;
-  /** Only admins may trigger a real API sync and see the manual button. */
+  /** Admin may trigger an immediate API sync. */
   canManualSync?: boolean;
 }
 
-function formatClock(totalSeconds: number): string {
-  const m = Math.floor(totalSeconds / 60);
-  const s = totalSeconds % 60;
-  return `${m}:${s.toString().padStart(2, "0")}`;
-}
-
-export function SyncTimer({
-  intervalSeconds = 120,
-  canManualSync = false,
-}: SyncTimerProps) {
+export function SyncTimer({ canManualSync = false }: SyncTimerProps) {
   const router = useRouter();
-  const [remaining, setRemaining] = useState(intervalSeconds);
   const [syncing, setSyncing] = useState(false);
   const [lastSync, setLastSync] = useState<string | null>(null);
-  const runningRef = useRef(false);
 
-  // Admins pull fresh data from the API; everyone else just re-reads the DB.
-  const tick = useCallback(async () => {
-    if (runningRef.current) return;
-    runningRef.current = true;
+  const handleManualSync = useCallback(async () => {
+    if (!canManualSync || syncing) return;
+    setSyncing(true);
     try {
-      if (canManualSync) {
-        setSyncing(true);
-        await fetch("/api/sync", { method: "POST" });
-        setLastSync(new Date().toLocaleTimeString("pl-PL"));
-      }
+      await fetch("/api/sync", { method: "POST" });
+      setLastSync(new Date().toLocaleTimeString("pl-PL"));
       router.refresh();
     } catch {
-      // Network hiccup — next tick will retry.
+      // Network hiccup — admin can retry.
     } finally {
       setSyncing(false);
-      runningRef.current = false;
-      setRemaining(intervalSeconds);
     }
-  }, [canManualSync, intervalSeconds, router]);
+  }, [canManualSync, syncing, router]);
 
-  useEffect(() => {
-    const id = setInterval(() => {
-      setRemaining((prev) => {
-        if (prev <= 1) {
-          void tick();
-          return intervalSeconds;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(id);
-  }, [intervalSeconds, tick]);
-
-  const intervalLabel =
-    intervalSeconds % 60 === 0
-      ? `${intervalSeconds / 60} min`
-      : `${intervalSeconds} s`;
+  const schedule = dailySyncDescription();
 
   return (
-    <div className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-surface/60 px-3 py-1.5 text-xs text-muted">
+    <div className="inline-flex max-w-full flex-wrap items-center gap-2 rounded-full border border-border/70 bg-surface/60 px-3 py-1.5 text-xs text-muted">
       <span
-        className={`h-2 w-2 rounded-full ${
+        className={`h-2 w-2 shrink-0 rounded-full ${
           syncing ? "animate-live-pulse bg-accent" : "bg-accent/60"
         }`}
       />
       {syncing ? (
-        <span className="font-medium text-accent">Synchronizacja…</span>
+        <span className="font-medium text-accent">Synchronizacja z API…</span>
       ) : (
         <span>
-          Widok odświeża się co {intervalLabel} · za{" "}
-          <span className="font-semibold tabular-nums text-foreground">
-            {formatClock(remaining)}
-          </span>
+          Wyniki z API: <span className="text-foreground">{schedule}</span>
+          {canManualSync ? (
+            <>
+              {" "}
+              ·{" "}
+              <button
+                type="button"
+                onClick={() => void handleManualSync()}
+                className="font-medium text-accent underline-offset-2 hover:underline"
+              >
+                sync teraz
+              </button>
+            </>
+          ) : (
+            <> · lub ręcznie przez administratora</>
+          )}
         </span>
       )}
       {canManualSync && lastSync && !syncing && (
-        <span className="hidden sm:inline">· ostatnia {lastSync}</span>
-      )}
-      {canManualSync && (
-        <button
-          type="button"
-          onClick={() => void tick()}
-          disabled={syncing}
-          aria-label="Synchronizuj teraz"
-          title="Synchronizuj teraz (admin)"
-          className="ml-1 rounded-full px-2 py-0.5 text-muted transition-colors hover:bg-surface-2 hover:text-foreground disabled:opacity-50"
-        >
-          ↻
-        </button>
+        <span className="hidden text-muted sm:inline">· ostatnia {lastSync}</span>
       )}
     </div>
   );
