@@ -40,6 +40,46 @@ export function formatDayLabel(key: string): string {
   }).format(d);
 }
 
+/** Add calendar days to a Warsaw day key (YYYY-MM-DD). */
+export function addDaysToKey(key: string, days: number): string {
+  const [y, m, d] = key.split("-").map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d + days));
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${dt.getUTCFullYear()}-${pad(dt.getUTCMonth() + 1)}-${pad(dt.getUTCDate())}`;
+}
+
+/**
+ * Matches on the active "Dziś" slate: today's calendar day plus early kickoffs
+ * tomorrow (before noon Warsaw) — US evening games that land at 1:00 / 6:00 in
+ * Poland the next morning, so users can still pick them the night before.
+ */
+export function isOnBettingSlate(
+  kickoff: string | null,
+  todayKey: string | null,
+): boolean {
+  if (!todayKey || !kickoff) return false;
+  const k = dayKey(kickoff);
+  if (!k) return false;
+  if (k === todayKey) return true;
+  const tomorrowKey = addDaysToKey(todayKey, 1);
+  if (k !== tomorrowKey) return false;
+  const hour = Number(
+    new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Europe/Warsaw",
+      hour: "numeric",
+      hour12: false,
+    }).format(new Date(kickoff)),
+  );
+  return hour < 12;
+}
+
+export function isArchiveDay(
+  selectedDay: string,
+  todayKey: string | null,
+): boolean {
+  return Boolean(todayKey && selectedDay < todayKey);
+}
+
 /** A match can be bet on only before kickoff and while it is still SCHEDULED. */
 export function isBettable(match: MatchRow, now: Date = new Date()): boolean {
   if (match.status !== "SCHEDULED") return false;
