@@ -28,9 +28,7 @@ export function Nav() {
   const [ready, setReady] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  useEffect(() => {
-    setMenuOpen(false);
-  }, [pathname]);
+  const handleCloseMenu = () => setMenuOpen(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -62,8 +60,25 @@ export function Nav() {
       void loadProfile(session?.user ?? null);
     });
     return () => sub.subscription.unsubscribe();
-    // Re-run on navigation so an updated avatar/nick is reflected.
-  }, [pathname]);
+  }, []);
+
+  // Refresh avatar/nick after profile edits without re-fetching on every tab click.
+  useEffect(() => {
+    if (!user || !pathname.startsWith("/profile")) return;
+    const supabase = createClient();
+    void supabase
+      .from("profiles")
+      .select("nick, avatar_url")
+      .eq("id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!data) return;
+        setProfile({
+          nick: data.nick ?? user.user_metadata?.nick ?? user.email ?? "Gracz",
+          avatarUrl: data.avatar_url ?? null,
+        });
+      });
+  }, [pathname, user]);
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
@@ -97,7 +112,13 @@ export function Nav() {
             </svg>
           </button>
 
-          <Link href="/" className="flex min-w-0 shrink items-center gap-2">
+          <Link
+            href="/"
+            prefetch
+            scroll={false}
+            onClick={handleCloseMenu}
+            className="flex min-w-0 shrink items-center gap-2"
+          >
             <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-accent/15 text-lg">
               🏆
             </span>
@@ -112,6 +133,8 @@ export function Nav() {
             <li key={link.href}>
               <Link
                 href={link.href}
+                prefetch
+                scroll={false}
                 aria-current={isActive(link.href) ? "page" : undefined}
                 className={`block whitespace-nowrap rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors lg:px-3 ${
                   isActive(link.href)
@@ -130,6 +153,8 @@ export function Nav() {
             <>
               <Link
                 href={`/profile/${user.id}`}
+                prefetch
+                scroll={false}
                 className="flex items-center gap-2 rounded-lg px-1 py-0.5 transition-colors hover:bg-surface"
               >
                 <Avatar
@@ -147,12 +172,16 @@ export function Nav() {
             <>
               <Link
                 href="/login"
+                prefetch
+                scroll={false}
                 className="rounded-lg px-2.5 py-1.5 text-sm text-muted transition-colors hover:text-foreground sm:px-3"
               >
                 Zaloguj
               </Link>
               <Link
                 href="/register"
+                prefetch
+                scroll={false}
                 className="rounded-lg bg-accent px-2.5 py-1.5 text-sm font-semibold text-background transition-colors hover:bg-accent-strong sm:px-3"
               >
                 Rejestracja
@@ -169,6 +198,9 @@ export function Nav() {
               <li key={link.href}>
                 <Link
                   href={link.href}
+                  prefetch
+                  scroll={false}
+                  onClick={handleCloseMenu}
                   aria-current={isActive(link.href) ? "page" : undefined}
                   className={`block rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                     isActive(link.href)
