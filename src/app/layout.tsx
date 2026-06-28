@@ -35,7 +35,7 @@ export default function RootLayout({
           {children}
         </main>
         <footer className="border-t border-border/60 px-4 py-6 text-center text-xs text-muted">
-          Forfun projekt typowania · Mistrzostwa Świata 2026
+          Mistrzostwa Świata 2026 · author: froooooooo
         </footer>
       </body>
     </html>
